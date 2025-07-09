@@ -48,6 +48,7 @@ function App() {
     return () => {
       if (interval) clearInterval(interval);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode]); // ✅ only mode dependency
 
   const handleModeToggle = () => {
