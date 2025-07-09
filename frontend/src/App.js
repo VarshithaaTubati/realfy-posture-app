@@ -10,18 +10,7 @@ function App() {
   const [isSending, setIsSending] = useState(false);
   const [mode, setMode] = useState("auto");
 
-  useEffect(() => {
-    let interval = null;
-    if (mode === "auto") {
-      interval = setInterval(() => {
-        captureAndSendFrame();
-      }, 2000);
-    }
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  },  [captureAndSendFrame]);
-
+  // 🔁 Moved above useEffect
   const captureAndSendFrame = async () => {
     if (
       webcamRef.current &&
@@ -48,6 +37,18 @@ function App() {
       }
     }
   };
+
+  useEffect(() => {
+    let interval = null;
+    if (mode === "auto") {
+      interval = setInterval(() => {
+        captureAndSendFrame();
+      }, 2000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [mode]); // ✅ only mode dependency
 
   const handleModeToggle = () => {
     setMode((prev) => (prev === "auto" ? "manual" : "auto"));
@@ -80,63 +81,59 @@ function App() {
 
   return (
     <div className="App">
-    <h2>🧍 Realfy Posture Detection</h2>
+      <h2>🧍 Realfy Posture Detection</h2>
 
-    <button onClick={handleModeToggle}>
-      Switch to {mode === "auto" ? "Manual" : "Auto"} Mode
-    </button>
+      <button onClick={handleModeToggle}>
+        Switch to {mode === "auto" ? "Manual" : "Auto"} Mode
+      </button>
 
-    {/* Main Content Row */}
-    <div className="main-section-container">
-      {/* Webcam Section */}
-      <div className="section-card webcam-section">
-        <h3>🎥 Webcam Mode ({mode === "auto" ? "Auto" : "Manual"})</h3>
-        <Webcam
-          audio={false}
-          ref={webcamRef}
-          screenshotFormat="image/jpeg"
-          width={500}
-          videoConstraints={{
-            width: 500,
-            height: 300,
-            facingMode: "user",
-          }}
-        />
-        {mode === "manual" && (
-          <button onClick={captureAndSendFrame}>📸 Capture and Analyze</button>
-        )}
-      </div>
+      <div className="main-section-container">
+        <div className="section-card webcam-section">
+          <h3>🎥 Webcam Mode ({mode === "auto" ? "Auto" : "Manual"})</h3>
+          <Webcam
+            audio={false}
+            ref={webcamRef}
+            screenshotFormat="image/jpeg"
+            width={500}
+            videoConstraints={{
+              width: 500,
+              height: 300,
+              facingMode: "user",
+            }}
+          />
+          {mode === "manual" && (
+            <button onClick={captureAndSendFrame}>📸 Capture and Analyze</button>
+          )}
+        </div>
 
-      {/* Feedback Section */}
-      <div className="section-card result">
-        <h3>📝 Posture Feedback:</h3>
-        <p>{postureResult || "Waiting for input..."}</p>
+        <div className="section-card result">
+          <h3>📝 Posture Feedback:</h3>
+          <p>{postureResult || "Waiting for input..."}</p>
 
-        {postureScore !== null && (
-          <div className="score-section">
-            <h4>📊 Posture Score: {postureScore} / 100</h4>
-            <div className="score-bar-container">
-              <div
-                className="score-bar"
-                style={{
-                  width: `${postureScore}%`,
-                  backgroundColor: postureScore >= 80 ? "#4caf50" : "#ff9800",
-                }}
-              ></div>
+          {postureScore !== null && (
+            <div className="score-section">
+              <h4>📊 Posture Score: {postureScore} / 100</h4>
+              <div className="score-bar-container">
+                <div
+                  className="score-bar"
+                  style={{
+                    width: `${postureScore}%`,
+                    backgroundColor: postureScore >= 80 ? "#4caf50" : "#ff9800",
+                  }}
+                ></div>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
-    </div>
 
-    {/* Video Upload goes below */}
-    <div className="upload-container">
-      <div className="section-card upload-section">
-        <h3>📁 Upload a Video</h3>
-        <input type="file" accept="video/*" onChange={handleVideoUpload} />
+      <div className="upload-container">
+        <div className="section-card upload-section">
+          <h3>📁 Upload a Video</h3>
+          <input type="file" accept="video/*" onChange={handleVideoUpload} />
+        </div>
       </div>
     </div>
-  </div>
   );
 }
 
